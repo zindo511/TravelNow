@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/trips")
 @RequiredArgsConstructor
@@ -22,6 +24,11 @@ public class TripController {
     @ResponseStatus(HttpStatus.CREATED)
     public TripDetails book(@Valid @RequestBody BookTripRequest request) {
         return tripService.bookTrip(request);
+    }
+
+    @GetMapping
+    public List<TripSummary> list() {
+        return tripService.listTrips();
     }
 
     @GetMapping("/{tripId}")

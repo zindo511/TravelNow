@@ -16,7 +16,10 @@ import vn.travelnow.payment.PaymentService;
 import vn.travelnow.shared.BookingFailedException;
 import vn.travelnow.shared.BookingStep;
 
+import org.springframework.data.domain.Sort;
+
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Điều phối luồng đặt và hủy chuyến đi. Coupling giữa hotel, flight, car, payment
@@ -110,6 +113,14 @@ public class TripService {
     public TripDetails getTrip(String tripId) {
         Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new TripNotFoundException(tripId));
         return assemble(trip);
+    }
+
+    /** Mọi chuyến đi đã commit, mới nhất trước. */
+    @Transactional(readOnly = true)
+    public List<TripSummary> listTrips() {
+        return tripRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
+                .map(TripSummary::of)
+                .toList();
     }
 
     private TripDetails assemble(Trip trip) {

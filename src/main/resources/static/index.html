@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TravelNow</title>
+<style>
+  :root {
+    --bg: #f5f4f1; --panel: #ffffff; --line: #dedbd3; --text: #24221e; --muted: #6f6a60;
+    --accent: #b4552d; --accent-text: #ffffff; --field: #ffffff;
+    --ok: #2f7d4f; --ok-bg: #e3f2e8; --bad: #b3372f; --bad-bg: #f9e4e2; --warn: #8a6a12; --warn-bg: #f6edd0;
+    --code: #f0eee9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1f1d1a; --panel: #2a2724; --line: #45413a; --text: #ece8df; --muted: #a59e90;
+      --accent: #e0935f; --accent-text: #1f1d1a; --field: #23211e;
+      --ok: #7fce9d; --ok-bg: #22392b; --bad: #f09a92; --bad-bg: #40231f; --warn: #e5c76b; --warn-bg: #3b331a;
+      --code: #23211e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.5 system-ui, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 20px 24px 4px; max-width: 1180px; margin: 0 auto; }
+  header h1 { margin: 0; font-size: 22px; }
+  header p { margin: 2px 0 0; color: var(--muted); }
+  main { max-width: 1180px; margin: 0 auto; padding: 16px 24px 40px;
+         display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 16px; align-items: start; }
+  @media (max-width: 860px) { main { grid-template-columns: minmax(0, 1fr); padding: 16px; } header { padding: 16px 16px 0; } }
+  .col { display: grid; gap: 16px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  h2 { margin: 0 0 12px; font-size: 16px; }
+  fieldset { border: 0; border-top: 1px solid var(--line); margin: 14px 0 0; padding: 10px 0 0; min-width: 0; }
+  legend { padding: 0 8px 0 0; font-weight: 600; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
+  .wide { grid-column: 1 / -1; }
+  label { display: grid; gap: 3px; font-size: 13px; color: var(--muted); }
+  input, select { font: inherit; color: var(--text); background: var(--field); border: 1px solid var(--line);
+                  border-radius: 6px; padding: 7px 9px; width: 100%; min-width: 0; }
+  input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .inline { display: flex; gap: 8px; }
+  .check { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 15px; }
+  .check input { width: auto; }
+  button { font: inherit; cursor: pointer; border-radius: 6px; padding: 7px 14px;
+           border: 1px solid var(--line); background: var(--panel); color: var(--text); white-space: nowrap; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+  button.danger { color: var(--bad); }
+  button:disabled { opacity: .5; cursor: default; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .hint { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
+  .BOOKED, .PAID { color: var(--ok); background: var(--ok-bg); }
+  .CANCELLED, .REFUNDED { color: var(--bad); background: var(--bad-bg); }
+  .PENDING { color: var(--warn); background: var(--warn-bg); }
+  .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .head h2 { margin: 0; }
+  ul.trips { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  ul.trips button { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; text-align: left; }
+  ul.trips button[aria-current="true"] { border-color: var(--accent); }
+  ul.trips .id { overflow: hidden; text-overflow: ellipsis; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  .empty { color: var(--muted); margin: 0; }
+  dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; }
+  dt { color: var(--muted); }
+  dd { margin: 0; overflow-wrap: anywhere; }
+  .total { font-weight: 600; }
+  .status-line { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;
+                 font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  .http { font-weight: 700; padding: 1px 8px; border-radius: 4px; }
+  .http.ok { color: var(--ok); background: var(--ok-bg); }
+  .http.err { color: var(--bad); background: var(--bad-bg); }
+  .message { margin: 0 0 8px; }
+  pre { margin: 0; background: var(--code); border-radius: 6px; padding: 10px 12px; font-size: 12.5px;
+        max-height: 300px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TravelNow</h1>
+  <p>Đặt chuyến đi trong một transaction — thành công toàn bộ, hoặc không lưu lại gì.</p>
+</header>
+
+<main>
+  <div class="col">
+    <section>
+      <h2>Đặt chuyến đi</h2>
+      <form id="bookForm">
+        <div class="grid">
+          <label class="wide">Mã chuyến đi (tripId, do client sinh)
+            <span class="inline">
+              <input id="tripId" required pattern="[A-Za-z0-9_\-]{1,64}" autocomplete="off">
+              <button type="button" id="newId">Mã mới</button>
+            </span>
+          </label>
+          <label class="wide">Người dùng
+            <input id="userId" required value="user-1">
+          </label>
+        </div>
+
+        <fieldset>
+          <legend>Khách sạn</legend>
+          <div class="grid">
+            <label class="wide">Tên khách sạn <input id="hotelName" required value="Đà Nẵng Riverside"></label>
+            <label>Nhận phòng <input id="checkIn" type="date" required></label>
+            <label>Trả phòng <input id="checkOut" type="date" required></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Chuyến bay</legend>
+          <div class="grid">
+            <label>Điểm đi <input id="origin" required value="Hà Nội"></label>
+            <label>Điểm đến <input id="destination" required value="Đà Nẵng"></label>
+            <label>Ngày đi <input id="departureDate" type="date" required></label>
+            <label>Ngày đến <input id="arrivalDate" type="date" required></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Thuê xe (tùy chọn)</legend>
+          <label class="check"><input id="withCar" type="checkbox"> Thêm xe thuê</label>
+          <div class="grid" id="carFields" hidden style="margin-top:10px">
+            <label class="wide">Loại xe <input id="carType" value="SUV"></label>
+            <label>Nhận xe <input id="pickupDate" type="date"></label>
+            <label>Trả xe <input id="returnDate" type="date"></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Giả lập sự cố</legend>
+          <label>Nhà cung cấp từ chối ở bước
+            <select id="failAt">
+              <option value="">Không — mọi bước thành công</option>
+              <option value="HOTEL">Đặt khách sạn</option>
+              <option value="FLIGHT">Đặt chuyến bay</option>
+              <option value="CAR">Thuê xe</option>
+              <option value="PAYMENT">Thanh toán</option>
+            </select>
+          </label>
+        </fieldset>
+
+        <div class="actions">
+          <button class="primary" id="submit">Xác nhận và thanh toán</button>
+        </div>
+        <p class="hint">Gửi lại cùng một mã để thấy yêu cầu trùng bị từ chối (409).</p>
+      </form>
+    </section>
+  </div>
+
+  <div class="col">
+    <section>
+      <div class="head">
+        <h2>Chuyến đi đã lưu</h2>
+        <button type="button" id="refresh">Tải lại</button>
+      </div>
+      <ul class="trips" id="tripList"></ul>
+      <p class="empty" id="noTrips">Chưa có chuyến đi nào được commit.</p>
+    </section>
+
+    <section id="detail" hidden>
+      <div class="head">
+        <h2 id="detailTitle"></h2>
+        <span class="badge" id="detailStatus"></span>
+      </div>
+      <dl id="detailBody"></dl>
+      <div class="actions">
+        <a id="pdfLink" target="_blank" rel="noopener"><button type="button">Xem PDF xác nhận</button></a>
+        <button type="button" class="danger" id="cancelBtn">Hủy chuyến đi</button>
+      </div>
+    </section>
+
+    <section aria-live="polite">
+      <h2>Phản hồi gần nhất từ server</h2>
+      <div id="response"><p class="empty">Chưa có yêu cầu nào.</p></div>
+    </section>
+  </div>
+</main>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const money = n => new Intl.NumberFormat('vi-VN').format(n) + ' ₫';
+  let selectedId = null;
+
+  function el(tag, props = {}, ...children) {
+    const node = Object.assign(document.createElement(tag), props);
+    node.append(...children);
+    return node;
+  }
+
+  function badge(status) {
+    return el('span', { className: 'badge ' + status, textContent: status });
+  }
+
+  // ---- gọi API và hiện nguyên văn phản hồi ----
+  async function api(method, path, body) {
+    let status = 0, data = null;
+    try {
+      const res = await fetch(path, {
+        method,
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body: body ? JSON.stringify(body) : undefined
+      });
+      status = res.status;
+      const text = await res.text();
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+    } catch (e) {
+      data = 'Không kết nối được server: ' + e.message;
+    }
+    return { ok: status >= 200 && status < 300, status, data, method, path };
+  }
+
+  function showResponse(r, message) {
+    const box = $('response');
+    box.replaceChildren(
+      el('div', { className: 'status-line' },
+        el('span', { className: 'http ' + (r.ok ? 'ok' : 'err'), textContent: r.status ? 'HTTP ' + r.status : 'Lỗi mạng' }),
+        el('span', { textContent: r.method + ' ' + r.path })),
+      el('p', { className: 'message', textContent: message }),
+      el('pre', { textContent: typeof r.data === 'string' ? r.data : JSON.stringify(r.data, null, 2) }));
+  }
+
+  function failureMessage(r) {
+    if (!r.status) return 'Chưa biết kết quả: không nhận được phản hồi. Hãy tra cứu lại trước khi đặt bằng mã mới.';
+    const detail = r.data && r.data.detail ? r.data.detail : '';
+    if (r.data && r.data.failedStep) return detail + ' Transaction đã rollback, không có gì được lưu.';
+    if (r.status === 400) return 'Dữ liệu gửi lên không hợp lệ. ' + detail;
+    return detail || 'Yêu cầu thất bại.';
+  }
+
+  // ---- danh sách và chi tiết ----
+  async function loadTrips() {
+    const r = await api('GET', '/api/trips');
+    const trips = r.ok ? r.data : [];
+    $('noTrips').hidden = trips.length > 0;
+    $('tripList').replaceChildren(...trips.map(t => {
+      const b = el('button', { type: 'button' },
+        el('span', { className: 'id', textContent: t.tripId }), badge(t.status));
+      if (t.tripId === selectedId) b.setAttribute('aria-current', 'true');
+      b.onclick = () => selectTrip(t.tripId, true);
+      return el('li', {}, b);
+    }));
+    if (selectedId && !trips.some(t => t.tripId === selectedId)) {
+      selectedId = null;
+      $('detail').hidden = true;
+    }
+  }
+
+  async function selectTrip(tripId, announce) {
+    const r = await api('GET', '/api/trips/' + encodeURIComponent(tripId));
+    if (announce) showResponse(r, r.ok ? 'Đã tải chuyến đi ' + tripId + '.' : failureMessage(r));
+    if (r.ok) renderDetail(r.data);
+    await loadTrips();
+  }
+
+  function renderDetail(t) {
+    selectedId = t.tripId;
+    $('detail').hidden = false;
+    $('detailTitle').textContent = t.tripId;
+    $('detailStatus').className = 'badge ' + t.status;
+    $('detailStatus').textContent = t.status;
+
+    const rows = [
+      ['Người dùng', t.userId],
+      ['Tạo lúc', new Date(t.createdAt).toLocaleString('vi-VN')],
+      ['Khách sạn', line(t.hotel.hotelName + ' · ' + t.hotel.checkIn + ' → ' + t.hotel.checkOut, t.hotel)],
+      ['Chuyến bay', line(t.flight.origin + ' → ' + t.flight.destination + ' · ' + t.flight.departureDate, t.flight)],
+      ['Xe thuê', t.car ? line(t.car.carType + ' · ' + t.car.pickupDate + ' → ' + t.car.returnDate, t.car) : 'Không thuê xe'],
+      ['Thanh toán', el('span', {},
+        el('span', { className: 'total', textContent: money(t.payment.amount) }),
+        ' · mã ' + t.payment.confirmationCode + ' ', badge(t.payment.status))]
+    ];
+    $('detailBody').replaceChildren(...rows.flatMap(([k, v]) =>
+      [el('dt', { textContent: k }), el('dd', {}, v)]));
+
+    $('pdfLink').href = '/api/trips/' + encodeURIComponent(t.tripId) + '/confirmation';
+    $('cancelBtn').disabled = t.status !== 'BOOKED';
+  }
+
+  function line(text, booking) {
+    return el('span', {}, text + ' · ' + money(booking.price) + ' ', badge(booking.status));
+  }
+
+  // ---- đặt và hủy ----
+  $('bookForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const v = id => $(id).value.trim();
+    const body = {
+      tripId: v('tripId'),
+      userId: v('userId'),
+      hotel: { hotelName: v('hotelName'), checkIn: v('checkIn'), checkOut: v('checkOut') },
+      flight: { origin: v('origin'), destination: v('destination'),
+                departureDate: v('departureDate'), arrivalDate: v('arrivalDate') },
+      car: $('withCar').checked
+        ? { carType: v('carType'), pickupDate: v('pickupDate'), returnDate: v('returnDate') } : null,
+      simulateFailureAt: v('failAt') || null
+    };
+    $('submit').disabled = true;
+    const r = await api('POST', '/api/trips', body);
+    $('submit').disabled = false;
+    showResponse(r, r.ok ? 'Chuyến đi đã được đặt đầy đủ và thanh toán xong.' : failureMessage(r));
+    if (r.ok) renderDetail(r.data);
+    await loadTrips();
+  });
+
+  $('cancelBtn').addEventListener('click', async () => {
+    if (!selectedId) return;
+    $('cancelBtn').disabled = true;
+    const r = await api('POST', '/api/trips/' + encodeURIComponent(selectedId) + '/cancel');
+    showResponse(r, r.ok ? 'Đã hoàn tiền và hủy mọi đặt chỗ của chuyến đi.' : failureMessage(r));
+    if (r.ok) renderDetail(r.data); else $('cancelBtn').disabled = false;
+    await loadTrips();
+  });
+
+  $('refresh').addEventListener('click', loadTrips);
+  $('newId').addEventListener('click', newTripId);
+  $('withCar').addEventListener('change', () => {
+    const on = $('withCar').checked;
+    $('carFields').hidden = !on;
+    for (const id of ['carType', 'pickupDate', 'returnDate']) $(id).required = on;
+  });
+
+  function newTripId() {
+    $('tripId').value = 'trip-' + crypto.randomUUID().slice(0, 8);
+  }
+
+  function isoDate(daysFromNow) {
+    const d = new Date();
+    d.setDate(d.getDate() + daysFromNow);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }
+
+  // Giá trị mặc định: đi sau 7 ngày, ở 3 đêm.
+  const start = isoDate(7), end = isoDate(10);
+  for (const id of ['checkIn', 'departureDate', 'arrivalDate', 'pickupDate']) $(id).value = start;
+  for (const id of ['checkOut', 'returnDate']) $(id).value = end;
+  newTripId();
+  loadTrips();
+</script>
+</body>
+</html>
