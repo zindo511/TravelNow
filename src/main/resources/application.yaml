@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: TravelNow
+  datasource:
+    # State "tạm bợ" có chủ đích: H2 in-memory, tắt app là mất dữ liệu.
+    url: jdbc:h2:mem:travelnow
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  port: 8080
+
+travelnow:
+  pdf:
+    dir: ./pdfs
